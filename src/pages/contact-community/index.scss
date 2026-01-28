@@ -1,0 +1,147 @@
+.contact-community-page {
+  min-height: 100vh;
+  background-color: #f7f8fa;
+  padding-bottom: 5vh;
+}
+
+.custom-header {
+  background: linear-gradient(135deg, #ff8917 0%, #ff6034 100%);
+  padding-bottom: 2vh;
+  position: relative;
+  
+  .nav-bar {
+      display: flex;
+      align-items: center;
+      padding-left: 16px; 
+      padding-top: 6vh;
+      
+      .back-btn {
+          display: flex;
+          align-items: center;
+          background: rgba(255, 255, 255, 0.2);
+          padding: 1vh 4vw 1vh 2vw;
+          border-radius: 40px;
+          color: #fff;
+          font-size: 30px;
+          backdrop-filter: blur(4px);
+      }
+  }
+
+  .header-content {
+      text-align: center;
+      padding: 2vh 0 4vh;
+      color: #fff;
+
+      .title {
+          font-size: 40px;
+          font-weight: 600;
+          margin-bottom: 1vh;
+          letter-spacing: 1px;
+      }
+
+      .subtitle {
+          font-size: 30px;
+          opacity: 0.9;
+      }
+  }
+}
+
+.community-list {
+    padding: 0 4vw;
+    position: relative;
+    z-index: 1;
+}
+
+.community-card {
+    background: #fff;
+    border-radius: 3vw;
+    margin-bottom: 2.5vh;
+    box-shadow: 0 2px 12px rgba(0, 0, 0, 0.04);
+    overflow: hidden;
+
+    .card-header {
+        padding: 2vh 4vw;
+        border-bottom: 1px solid #f5f5f5;
+
+        .icon-wrapper {
+            width: 12vw;
+            height: 12vw;
+            background: #ff8917;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 3vw;
+            flex-shrink: 0;
+            box-shadow: 0 4px 8px rgba(255, 137, 23, 0.2);
+        }
+
+        .info-content {
+            flex: 1;
+            
+            .name {
+                font-size: 30px;
+                font-weight: 550;
+                color: #333;
+                margin-bottom: 0.5vh;
+            }
+
+            .address {
+                font-size: 22px;
+                color: #999;
+                line-height: 1.4;
+            }
+        }
+    }
+
+    .phone-row {
+        padding: 2vh 4vw;
+        display: flex;
+        align-items: center;
+        
+        .phone-icon {
+            color: #ff8917;
+            margin-right: 2vw;
+            font-size: 30px;
+        }
+
+        .label {
+            color: #666;
+            font-size: 30px;
+        }
+
+        .number {
+            color: #ff6034;
+            font-size: 30px;
+            font-weight: 500;
+            margin-left: 1vw;
+        }
+    }
+
+    .action-row {
+        display: flex;
+
+        .action-btn {
+            flex: 1;
+            border: none;
+            border-radius: 0;
+            height: 6vh;
+            font-size: 35px;
+            color: #fff;
+            
+            &.call-btn {
+                background: #ff6034;
+                opacity: 0.9;
+            }
+
+            &.nav-btn {
+                background: #ff8917;
+                opacity: 0.9;
+            }
+            
+            &:active {
+                opacity: 1;
+            }
+        }
+    }
+}

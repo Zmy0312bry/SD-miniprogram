@@ -4,7 +4,8 @@ export default defineAppConfig({
     'pages/chat/index',
     'pages/profile/index',
     'pages/profile-info/index',
-    'pages/about/index'
+    'pages/about/index',
+    'pages/contact-community/index'
   ],
   tabBar: {
     custom: true,
