@@ -1,0 +1,37 @@
+.service-grid-wrapper {
+  padding: 20px 24px;
+}
+
+.service-grid-container {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 20px;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 160px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, #FFD93D 0%, #FFA94D 100%);
+  box-shadow: 
+    0 8px 16px rgba(255, 145, 77, 0.3),
+    inset 0 2px 4px rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  &:active {
+    transform: scale(0.96);
+    box-shadow: 
+      0 4px 12px rgba(255, 145, 77, 0.4),
+      inset 0 2px 4px rgba(255, 255, 255, 0.5);
+  }
+}
+
+.service-title {
+  color: #FFFFFF;
+  font-size: 28px;
+  font-weight: 600;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+}

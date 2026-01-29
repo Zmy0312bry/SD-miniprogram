@@ -2,6 +2,7 @@ import { View, Text } from '@tarojs/components'
 import { useLoad } from '@tarojs/taro'
 import WarmTip from '../../components/WarmTip'
 import BannerSwiper from '../../components/BannerSwiper'
+import ServiceGrid from '../../components/ServiceGrid'
 import './index.scss'
 
 export default function Index () {
@@ -17,13 +18,14 @@ export default function Index () {
 
   return (
     <View className='index'>
-      <BannerSwiper 
+      <BannerSwiper
         images={bannerImages}
         autoplay={3000}
         height={150}
         onChange={(index) => console.log('当前轮播索引:', index)}
       />
-      <WarmTip text="欢迎来到小程序" />
+      <WarmTip text='欢迎来到小程序' />
+      <ServiceGrid />
     </View>
   )
 }

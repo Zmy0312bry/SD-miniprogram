@@ -5,7 +5,15 @@ export default defineAppConfig({
     'pages/profile/index',
     'pages/profile-info/index',
     'pages/about/index',
-    'pages/contact-community/index'
+    'pages/contact-community/index',
+    'pages/PolicyRegulation/index',
+    'pages/HealthService/index',
+    'pages/ResourceList/index',
+    'pages/ServiceMap/index',
+    'pages/Feedback/index',
+    'pages/HealthGuidance/index',
+    'pages/ElderlyCareMeal/index',
+    'pages/MoreServices/index'
   ],
   tabBar: {
     custom: true,

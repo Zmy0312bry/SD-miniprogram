@@ -5,14 +5,14 @@ import Taro from '@tarojs/taro'
 import './index.scss'
 
 export default function ContactCommunity() {
-  
+
   const communityList = [
     {
       id: 1,
       name: '上地东里第一社区',
       address: '海淀区上地东里四区7号楼102',
       phone: '62986360',
-      lat: 40.032123, 
+      lat: 40.032123,
       lng: 116.319766
     },
     {
@@ -20,7 +20,7 @@ export default function ContactCommunity() {
       name: '上地东里第二社区',
       address: '海淀区上地街道上地东里七区四号楼一层',
       phone: '62982695',
-      lat: 40.033100, 
+      lat: 40.033100,
       lng: 116.320800
     },
     {
@@ -75,7 +75,7 @@ export default function ContactCommunity() {
                 <Text>返回</Text>
             </View>
         </View>
-        
+
         <View className='header-content'>
             <View className='title'>联系社区</View>
             <View className='subtitle'>上地街道各社区联系方式</View>
@@ -87,9 +87,9 @@ export default function ContactCommunity() {
         {communityList.map(item => (
             <View key={item.id} className='community-card'>
                 {/* 头部信息 */}
-                <Flex align="center" className='card-header'>
+                <Flex align='center' className='card-header'>
                     <View className='icon-wrapper'>
-                        <HomeOutlined size={24} color="#fff" />
+                        <HomeOutlined size={24} color='#fff' />
                     </View>
                     <View className='info-content'>
                         <View className='name'>{item.name}</View>
@@ -99,23 +99,23 @@ export default function ContactCommunity() {
 
                 {/* 电话行 */}
                 <View className='phone-row'>
-                    <Phone className='phone-icon' /> 
+                    <Phone className='phone-icon' />
                     <Text className='label'>联系电话：</Text>
                     <Text className='number'>{item.phone}</Text>
                 </View>
 
                 {/* 按钮组 */}
                 <Flex className='action-row'>
-                    <Button 
-                        className='action-btn call-btn' 
+                    <Button
+                        className='action-btn call-btn'
                         shape="square"
                         onClick={() => handleCall(item.phone)}
                     >
-                        <Phone size={16} style={{ marginRight: 4 }} /> 
+                        <Phone size={16} style={{ marginRight: 4 }} />
                         立即拨打
                     </Button>
-                    <Button 
-                        className='action-btn nav-btn' 
+                    <Button
+                        className='action-btn nav-btn'
                         shape="square"
                         onClick={() => handleNavigate(item)}
                     >
