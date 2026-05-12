@@ -32,6 +32,7 @@ export default defineAppConfig({
       root: "PolicyRegulation",
       pages: [
         "index",
+        "policy/index",
         "guide/index",
         "guide/detail",
         "guide/content",

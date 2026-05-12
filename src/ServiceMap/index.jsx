@@ -6,109 +6,243 @@ import Tag from "@taroify/core/tag";
 import ArrowLeft from "@taroify/icons/ArrowLeft";
 import Arrow from "@taroify/icons/Arrow";
 import LocationOutlined from "@taroify/icons/LocationOutlined";
-import { getServiceMapTypes } from "../api/serviceMap";
+import { getServiceMapContents, getServiceMapTypes } from "../api/serviceMap";
 import { getCommunityServices } from "../api/community_service";
 import "./index.scss";
 
-/**
- * 递归渲染 JSON 层级结构
- * @param {any} data - 要渲染的数据（对象 / 数组 / 基本值）
- * @param {number} depth - 当前嵌套深度
- */
-function renderTree(data, depth = 0) {
-  if (data === null || data === undefined) return null;
-
-  // 数组：遍历渲染每个元素
-  if (Array.isArray(data)) {
-    return (
-      <View className="tree-array" style={{ paddingLeft: depth > 0 ? 24 : 0 }}>
-        {data.map((item, idx) => (
-          <View className="tree-array-item" key={idx}>
-            {typeof item === "object" ? (
-              renderTree(item, depth + 1)
-            ) : (
-              <View className="tree-leaf">
-                <View className="leaf-dot" />
-                <Text className="leaf-text">{String(item)}</Text>
-              </View>
-            )}
-          </View>
-        ))}
-      </View>
-    );
+const tryParseJson = (value) => {
+  if (typeof value !== "string") {
+    return value;
   }
 
-  // 对象：遍历 key-value 对
-  if (typeof data === "object") {
-    const keys = Object.keys(data);
-    return (
-      <View className="tree-object" style={{ paddingLeft: depth > 0 ? 24 : 0 }}>
-        {keys.map((key) => {
-          const value = data[key];
-          const isLeaf =
-            typeof value !== "object" ||
-            (Array.isArray(value) && value.every((v) => typeof v !== "object"));
+  try {
+    return JSON.parse(value);
+  } catch {
+    return value;
+  }
+};
 
-          return (
-            <View
-              className={`tree-branch depth-${Math.min(depth, 3)}`}
-              key={key}
-            >
-              <View className="branch-header">
-                <Arrow size={12} className="branch-arrow" />
-                <Text className="branch-key">{key}</Text>
-                {isLeaf && !Array.isArray(value) && (
-                  <Text className="branch-value">{String(value)}</Text>
-                )}
-              </View>
-              {/* 子节点 */}
-              {typeof value === "object" && (
-                <View className="branch-children">
-                  {renderTree(value, depth + 1)}
-                </View>
-              )}
-            </View>
-          );
-        })}
-      </View>
-    );
+const readFirst = (source, keys) => {
+  if (!source || typeof source !== "object") {
+    return "";
   }
 
-  // 基本类型
+  for (const key of keys) {
+    const value = source[key];
+    if (value !== undefined && value !== null && value !== "") {
+      return String(value);
+    }
+  }
+
+  return "";
+};
+
+const parseTypeName = (typeName) => {
+  if (!typeName && typeName !== 0) {
+    return null;
+  }
+
+  if (typeof typeName === "object") {
+    return typeName;
+  }
+
+  return tryParseJson(typeName) || String(typeName);
+};
+
+const getObjectCategoryName = (item) => {
   return (
-    <View className="tree-leaf">
-      <View className="leaf-dot" />
-      <Text className="leaf-text">{String(data)}</Text>
-    </View>
+    item.type_two ||
+    item.typeTwo ||
+    item.type_name ||
+    item.typeName ||
+    item.name ||
+    item.title ||
+    item.label ||
+    ""
   );
-}
+};
+
+const normalizeTypeCategories = (parsed) => {
+  if (!parsed && parsed !== 0) {
+    return [];
+  }
+
+  if (typeof parsed === "string" || typeof parsed === "number") {
+    return [{ typeTwo: String(parsed), title: String(parsed) }];
+  }
+
+  if (Array.isArray(parsed)) {
+    return parsed
+      .map((item) => {
+        if (typeof item === "string" || typeof item === "number") {
+          return { typeTwo: String(item), title: String(item) };
+        }
+
+        if (item && typeof item === "object") {
+          const title = getObjectCategoryName(item);
+          return title
+            ? { typeTwo: String(title), title: String(title) }
+            : null;
+        }
+
+        return null;
+      })
+      .filter(Boolean);
+  }
+
+  if (typeof parsed === "object") {
+    return Object.keys(parsed)
+      .map((key) => {
+        const value = parsed[key];
+        if (value && typeof value === "object" && !Array.isArray(value)) {
+          const title = getObjectCategoryName(value);
+          if (title) {
+            return { typeTwo: String(title), title: String(title) };
+          }
+        }
+
+        if (typeof value === "string" || typeof value === "number") {
+          return { typeTwo: String(value), title: String(value) };
+        }
+
+        return { typeTwo: key, title: key };
+      })
+      .filter((item) => item.typeTwo);
+  }
+
+  return [];
+};
+
+const normalizeContentList = (res) => {
+  const list = Array.isArray(res?.service_map_contents)
+    ? res.service_map_contents
+    : Array.isArray(res?.serviceMapContents)
+      ? res.serviceMapContents
+      : Array.isArray(res?.data)
+        ? res.data
+        : [];
+
+  return list.map((item) => ({
+    ...item,
+    contentParsed: tryParseJson(item?.content),
+  }));
+};
+
+const extractDisplaySources = (contentItem) => {
+  const parsed = contentItem?.contentParsed;
+
+  if (Array.isArray(parsed)) {
+    return parsed;
+  }
+
+  if (parsed && typeof parsed === "object") {
+    const list =
+      parsed.shops ||
+      parsed.stores ||
+      parsed.providers ||
+      parsed.items ||
+      parsed.list ||
+      parsed.data;
+    return Array.isArray(list) ? list : [parsed];
+  }
+
+  return [];
+};
+
+const normalizeDisplayItem = (source) => {
+  const shopName = readFirst(source, [
+    "shop_name",
+    "shopName",
+    "store_name",
+    "storeName",
+    "provider_name",
+    "providerName",
+    "name",
+    "title",
+    "店铺名",
+    "商家名称",
+    "机构名称",
+  ]);
+  const address = readFirst(source, [
+    "address",
+    "addr",
+    "location",
+    "detail_address",
+    "detailAddress",
+    "地址",
+    "详细地址",
+  ]);
+  const phone = readFirst(source, [
+    "phone",
+    "telephone",
+    "tel",
+    "mobile",
+    "contact_phone",
+    "contactPhone",
+    "联系电话",
+    "电话",
+  ]);
+  const owner = readFirst(source, [
+    "boss",
+    "boss_name",
+    "bossName",
+    "owner",
+    "owner_name",
+    "ownerName",
+    "manager",
+    "contact_person",
+    "contactPerson",
+    "person_in_charge",
+    "personInCharge",
+    "老板",
+    "负责人",
+    "联系人",
+  ]);
+
+  return { shopName, address, phone, owner };
+};
+
+const buildDisplayItems = (contents) => {
+  return contents
+    .flatMap((contentItem) => extractDisplaySources(contentItem))
+    .map(normalizeDisplayItem)
+    .filter(
+      (item) => item.shopName || item.address || item.phone || item.owner,
+    );
+};
+
+const normalizeCommunityKey = (name) => {
+  return String(name || "")
+    .trim()
+    .replace(/\s+/g, "")
+    .replace(/社区$/u, "");
+};
+
+const toFiniteNumber = (value) => {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : NaN;
+};
+
+const makeCategoryKey = (typeOne, typeTwo) => `${typeOne}::${typeTwo}`;
 
 export default function ServiceMap() {
   const [mapTypes, setMapTypes] = useState([]);
   const [expandedIds, setExpandedIds] = useState([]);
+  const [expandedCategoryKeys, setExpandedCategoryKeys] = useState([]);
   const [loading, setLoading] = useState(false);
   const [errorText, setErrorText] = useState("");
 
-  const normalizeCommunityKey = (name) => {
-    return String(name || "")
-      .trim()
-      .replace(/\s+/g, "")
-      .replace(/社区$/u, "");
-  };
-
-  const toFiniteNumber = (value) => {
-    const n = Number(value);
-    return Number.isFinite(n) ? n : NaN;
-  };
-
   useEffect(() => {
-    setLoading(true);
-    setErrorText("");
-    Promise.all([
-      getServiceMapTypes(),
-      getCommunityServices().catch(() => null),
-    ])
-      .then(([res, communityRes]) => {
+    const fetchServiceMapTypes = async () => {
+      setLoading(true);
+      setErrorText("");
+
+      try {
+        const [res, communityRes] = await Promise.all([
+          getServiceMapTypes(),
+          getCommunityServices().catch(() => null),
+        ]);
+
         if (res?.code && res.code !== 200) {
           setErrorText(res?.message || "服务地图接口返回异常");
         }
@@ -155,6 +289,7 @@ export default function ServiceMap() {
             : Array.isArray(res?.data)
               ? res.data
               : [];
+
         const list = rawList
           .map((item, index) => ({
             ...item,
@@ -178,24 +313,30 @@ export default function ServiceMap() {
               longitude: Number.isFinite(item.longitude)
                 ? item.longitude
                 : fallback?.longitude,
+              categories: normalizeTypeCategories(
+                parseTypeName(item.type_name),
+              ),
             };
           })
           .sort((a, b) => (a.id || 0) - (b.id || 0));
+
         setMapTypes(list);
-        setExpandedIds(list.map((t) => t.id).filter(Boolean));
+        setExpandedIds([]);
 
         if (!list.length && res?.message && (!res?.code || res.code !== 200)) {
           setErrorText(res.message);
         }
-      })
-      .catch(() => {
+      } catch (error) {
+        console.error("[ServiceMap] data request failed:", error);
         setMapTypes([]);
         setExpandedIds([]);
         setErrorText("服务地图数据加载失败，请稍后重试");
-      })
-      .finally(() => {
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    fetchServiceMapTypes();
   }, []);
 
   const goBack = () => {
@@ -228,28 +369,111 @@ export default function ServiceMap() {
     );
   };
 
-  /**
-   * 安全解析 type_name JSON 字符串
-   */
-  const parseTypeName = (typeNameStr) => {
-    if (!typeNameStr && typeNameStr !== 0) {
-      return null;
+  const updateCategory = (typeOne, typeTwo, patch) => {
+    setMapTypes((prev) =>
+      prev.map((item) => {
+        if (item.id !== typeOne) {
+          return item;
+        }
+
+        return {
+          ...item,
+          categories: item.categories.map((category) =>
+            category.typeTwo === typeTwo ? { ...category, ...patch } : category,
+          ),
+        };
+      }),
+    );
+  };
+
+  const toggleCategory = async (item, category) => {
+    const categoryKey = makeCategoryKey(item.id, category.typeTwo);
+    const willExpand = !expandedCategoryKeys.includes(categoryKey);
+
+    setExpandedCategoryKeys((prev) =>
+      willExpand
+        ? [...prev, categoryKey]
+        : prev.filter((key) => key !== categoryKey),
+    );
+
+    if (!willExpand || category.loaded || category.loading) {
+      return;
     }
 
-    if (typeof typeNameStr === "object") {
-      return typeNameStr;
-    }
+    updateCategory(item.id, category.typeTwo, {
+      loading: true,
+      errorText: "",
+    });
 
     try {
-      return JSON.parse(typeNameStr);
-    } catch {
-      return null;
+      const contentRes = await getServiceMapContents(item.id, category.typeTwo);
+      const contents = normalizeContentList(contentRes);
+      updateCategory(item.id, category.typeTwo, {
+        loading: false,
+        loaded: true,
+        contents,
+        displayItems: buildDisplayItems(contents),
+      });
+    } catch (error) {
+      console.error("[ServiceMap] content request failed:", {
+        type_one: item.id,
+        type_two: category.typeTwo,
+        error,
+      });
+      updateCategory(item.id, category.typeTwo, {
+        loading: false,
+        loaded: true,
+        contents: [],
+        displayItems: [],
+        errorText: "内容加载失败，请稍后重试",
+      });
     }
+  };
+
+  const renderCategoryContent = (category) => {
+    if (category.loading) {
+      return <Text className="type-empty-text">正在加载...</Text>;
+    }
+
+    if (category.errorText) {
+      return <Text className="type-empty-text">{category.errorText}</Text>;
+    }
+
+    if (!category.loaded) {
+      return <Text className="type-empty-text">点击类目查看内容</Text>;
+    }
+
+    if (!category.displayItems?.length) {
+      return <Text className="type-empty-text">暂无可展示信息</Text>;
+    }
+
+    return category.displayItems.map((content, index) => (
+      <View className="content-card" key={`${category.typeTwo}-${index}`}>
+        <Text className="shop-name">{content.shopName || "未命名店铺"}</Text>
+        {content.address ? (
+          <View className="info-row">
+            <Text className="info-label">地址</Text>
+            <Text className="info-value">{content.address}</Text>
+          </View>
+        ) : null}
+        {content.phone ? (
+          <View className="info-row">
+            <Text className="info-label">电话</Text>
+            <Text className="info-value">{content.phone}</Text>
+          </View>
+        ) : null}
+        {content.owner ? (
+          <View className="info-row">
+            <Text className="info-label">老板</Text>
+            <Text className="info-value">{content.owner}</Text>
+          </View>
+        ) : null}
+      </View>
+    ));
   };
 
   return (
     <View className="service-map-page">
-      {/* 头部导航 */}
       <View className="custom-header">
         <View className="nav-bar">
           <View className="back-btn" onClick={goBack}>
@@ -263,7 +487,6 @@ export default function ServiceMap() {
         </View>
       </View>
 
-      {/* 一级目录：每个 service_map_type 条目 */}
       <View className="community-list">
         {loading ? (
           <Text className="state-text">正在加载服务地图...</Text>
@@ -276,19 +499,17 @@ export default function ServiceMap() {
         ) : null}
 
         {mapTypes.map((item) => {
-          const parsed = parseTypeName(item.type_name);
           const isExpanded = expandedIds.includes(item.id);
-          const typeKeys = parsed ? Object.keys(parsed) : [];
+          const categories = item.categories || [];
 
           return (
             <View className="community-card" key={item.id}>
-              {/* 一级标题：社区名称 */}
               <View
                 className="community-header"
                 onClick={() => toggleExpand(item.id)}
               >
                 <View className="community-title-row">
-                  <Text className="community-icon">🏘️</Text>
+                  <Text className="community-icon">社区</Text>
                   <Text className="community-name">{item.community_name}</Text>
                   <Tag
                     color="warning"
@@ -297,7 +518,7 @@ export default function ServiceMap() {
                     size="small"
                     className="type-count-tag"
                   >
-                    {item.type_sum} 类服务
+                    服务类目
                   </Tag>
                 </View>
                 <View
@@ -307,7 +528,6 @@ export default function ServiceMap() {
                 </View>
               </View>
 
-              {/* 地图定位按钮 */}
               <View className="community-location">
                 <Button
                   className="location-btn"
@@ -325,27 +545,48 @@ export default function ServiceMap() {
                 </Button>
               </View>
 
-              {/* 二级内容：type_name 解析后的层级 */}
-              {isExpanded && parsed && (
+              {isExpanded ? (
                 <View className="community-body">
-                  {typeKeys.map((key, idx) => (
-                    <View className="type-section" key={key}>
-                      {/* 二级标题 */}
-                      <View className="type-section-header">
-                        <View className="section-indicator" />
-                        <Text className="type-section-title">{key}</Text>
-                      </View>
-                      {/* 二级内容：递归渲染 */}
-                      <View className="type-section-body">
-                        {renderTree(parsed[key], 0)}
-                      </View>
-                      {idx < typeKeys.length - 1 && (
-                        <View className="section-divider" />
-                      )}
-                    </View>
-                  ))}
+                  {categories.length ? (
+                    categories.map((category) => {
+                      const categoryKey = makeCategoryKey(
+                        item.id,
+                        category.typeTwo,
+                      );
+                      const isCategoryExpanded =
+                        expandedCategoryKeys.includes(categoryKey);
+
+                      return (
+                        <View className="type-section" key={category.typeTwo}>
+                          <View
+                            className="type-section-header"
+                            onClick={() => toggleCategory(item, category)}
+                          >
+                            <View className="section-indicator" />
+                            <Text className="type-section-title">
+                              {category.title}
+                            </Text>
+                            <View
+                              className={`category-arrow ${
+                                isCategoryExpanded ? "expanded" : ""
+                              }`}
+                            >
+                              <Arrow size={14} />
+                            </View>
+                          </View>
+                          {isCategoryExpanded ? (
+                            <View className="type-section-body">
+                              {renderCategoryContent(category)}
+                            </View>
+                          ) : null}
+                        </View>
+                      );
+                    })
+                  ) : (
+                    <Text className="type-empty-text">暂无服务类目</Text>
+                  )}
                 </View>
-              )}
+              ) : null}
             </View>
           );
         })}

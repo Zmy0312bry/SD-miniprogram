@@ -1,12 +1,9 @@
-/* ServiceMap 养老服务资源地图 */
-
 .service-map-page {
   min-height: 100vh;
   background-color: #f1f8ff;
   padding-bottom: 5vh;
 }
 
-/* ====== 头部导航 ====== */
 .custom-header {
   background: linear-gradient(135deg, #73c7ff 0%, #409de8 100%);
   padding-bottom: 2vh;
@@ -51,7 +48,6 @@
   }
 }
 
-/* ====== 一级列表区域 ====== */
 .community-list {
   margin-top: -3vh;
   padding: 0 4vw;
@@ -71,7 +67,6 @@
   box-shadow: 0 4px 20px rgb(64 157 232 / 10%);
 }
 
-/* ====== 一级卡片：社区 ====== */
 .community-card {
   background: #fff;
   border-radius: 24px;
@@ -84,7 +79,6 @@
   }
 }
 
-/* 一级标题栏 */
 .community-header {
   display: flex;
   align-items: center;
@@ -100,7 +94,12 @@
     gap: 12px;
 
     .community-icon {
-      font-size: 36px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: #dff0ff;
+      color: #277fc8;
+      font-size: 24px;
+      flex-shrink: 0;
     }
 
     .community-name {
@@ -125,7 +124,6 @@
   }
 }
 
-/* 地图定位按钮 */
 .community-location {
   padding: 0 32px 24px;
 
@@ -144,14 +142,16 @@
   }
 }
 
-/* 一级内容区 */
 .community-body {
   padding: 20px 32px 28px;
 }
 
-/* ====== 二级区块：服务类型 ====== */
 .type-section {
-  margin-bottom: 8px;
+  margin-bottom: 16px;
+  border-radius: 18px;
+  background: #f8fbff;
+  border: 1px solid #dcecff;
+  overflow: hidden;
 
   &:last-child {
     margin-bottom: 0;
@@ -162,7 +162,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 16px;
+  padding: 20px 22px;
 
   .section-indicator {
     width: 8px;
@@ -173,111 +173,70 @@
   }
 
   .type-section-title {
+    flex: 1;
     font-size: 30px;
-    font-weight: 500;
-    color: #333;
+    font-weight: 600;
+    color: #1f3f5b;
+  }
+}
+
+.category-arrow {
+  color: #409de8;
+  transition: transform 0.25s ease;
+
+  &.expanded {
+    transform: rotate(90deg);
   }
 }
 
 .type-section-body {
-  padding-left: 20px;
-}
-
-.section-divider {
-  height: 1px;
-  background: #dcecff;
-  margin: 20px 0;
-}
-
-/* ====== 递归树渲染 ====== */
-.tree-object,
-.tree-array {
-  width: 100%;
-}
-
-/* 分支节点（对象的 key-value） */
-.tree-branch {
-  margin-bottom: 12px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
-
-  .branch-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 8px;
-
-    .branch-arrow {
-      color: #409de8;
-      flex-shrink: 0;
-    }
-
-    .branch-key {
-      font-size: 26px;
-      font-weight: 500;
-      color: #555;
-    }
-
-    .branch-value {
-      font-size: 26px;
-      color: #888;
-      margin-left: 8px;
-    }
-  }
-
-  .branch-children {
-    padding-left: 8px;
-    border-left: 2px solid #cfe6ff;
-    margin-left: 6px;
-  }
-}
-
-/* 深度颜色区分 */
-.depth-0 > .branch-header .branch-key {
-  color: #2f84d1;
-  font-weight: 600;
-}
-
-.depth-1 > .branch-header .branch-key {
-  color: #555;
-}
-
-.depth-2 > .branch-header .branch-key {
-  color: #777;
-}
-
-.depth-3 > .branch-header .branch-key {
-  color: #999;
-}
-
-/* 叶子节点 */
-.tree-leaf {
   display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 6px 0;
-
-  .leaf-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    background: #73c7ff;
-    flex-shrink: 0;
-  }
-
-  .leaf-text {
-    font-size: 26px;
-    color: #666;
-  }
+  flex-direction: column;
+  gap: 14px;
+  padding: 0 22px 22px;
 }
 
-/* 数组项 */
-.tree-array-item {
-  margin-bottom: 4px;
+.type-empty-text {
+  display: block;
+  color: #7b8a99;
+  font-size: 26px;
+  padding: 12px 0;
+}
 
-  &:last-child {
-    margin-bottom: 0;
-  }
+.content-card {
+  padding: 22px;
+  border-radius: 18px;
+  background: #fff;
+  box-shadow: 0 4px 14px rgb(64 157 232 / 9%);
+  border: 1px solid #e8f3ff;
+}
+
+.shop-name {
+  display: block;
+  color: #1a1a1a;
+  font-size: 30px;
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+
+.info-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 8px 0;
+}
+
+.info-label {
+  width: 72px;
+  color: #409de8;
+  font-size: 26px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+.info-value {
+  flex: 1;
+  color: #4b5b68;
+  font-size: 26px;
+  line-height: 1.45;
 }

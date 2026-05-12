@@ -217,11 +217,15 @@ const normalizeResponse = (res) => {
  * }>}
  */
 export const getServiceMapTypes = () => {
-  return request({
+  const requestOptions = {
     url: "/api/service_map_type",
     method: "GET",
     responseType: "arraybuffer",
-  }).then((res) => checkAuth(decodeTypeResponse(res)));
+  };
+  console.log("[ServiceMap][GET request]", requestOptions);
+  return request(requestOptions).then((res) =>
+    checkAuth(decodeTypeResponse(res)),
+  );
 };
 
 /**
@@ -292,14 +296,24 @@ export const deleteServiceMapType = (id) => {
  * }>}
  */
 export const getServiceMapContents = (typeOne, typeTwo) => {
-  return request({
+  const requestOptions = {
     url: withQuery("/api/service_map_content", {
       type_one: typeOne,
       type_two: typeTwo,
     }),
     method: "GET",
     responseType: "arraybuffer",
-  }).then((res) => checkAuth(decodeContentResponse(res)));
+  };
+  console.log("[ServiceMap][GET request]", {
+    ...requestOptions,
+    params: {
+      type_one: typeOne,
+      type_two: typeTwo,
+    },
+  });
+  return request(requestOptions).then((res) =>
+    checkAuth(decodeContentResponse(res)),
+  );
 };
 
 /**
